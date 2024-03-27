@@ -51,7 +51,6 @@ class SentenceSegmentation:
         # replace quotes
         document = document.replace(QUOTE_TRANSLATION[0], '"')
         document = document.replace(QUOTE_TRANSLATION[1], '"')
-
         self.strings = document
 
         self.wordLists = []
@@ -59,7 +58,7 @@ class SentenceSegmentation:
         self.sentenceLists = []
 
         self.wordLists = self.stringUtils.splitStringBySpaces(self.strings)
-
+        print(self.wordLists)
         self.findEndOfSentence()
         return self.sentenceLists
 
@@ -87,7 +86,8 @@ class SentenceSegmentation:
                     startlist = ".".join(splitItem[:-1])
 
                     splitItem = [startlist, endlist]
-
+                    # if self.wordLists[x] == '23.500.000':
+                    #     print(splitItem)
                 # print(splitItem)
 
                 # test tld
@@ -95,16 +95,20 @@ class SentenceSegmentation:
                     str.maketrans("", "", string.punctuation)
                 )
                 str_item_1 = "".join([".", str_item_1.lower()])
-
+                print(self.processedWordLists[-5:])
                 if str_item_1 not in self.tld_dict:
                     # if abbreviations
-                    if (splitItem[0].lower() not in self.abbreviations_dict) and (
+                    if ((splitItem[0].lower() not in self.abbreviations_dict) and (
                         splitItem[1][0].isupper() or splitItem[1][0] in ['"']
-                    ):
+                    )) :
+                        print("AHA INI SPLITITEM")
+                        print(splitItem)
                         split_str = ["".join([splitItem[0], "."]), splitItem[1]]
                         self.processedWordLists.append(split_str[0].strip())
                         self.processedWordLists.append(split_str[1].strip())
-
+                    else: #numerik //bukan kalimat baru
+                        split_str = "".join([splitItem[0], ".", splitItem[1]])
+                        self.processedWordLists.append(split_str.strip())
                 # in a tld domain
                 else:
                     split_str = "".join([splitItem[0], ".", splitItem[1]])
