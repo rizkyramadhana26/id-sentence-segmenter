@@ -91,7 +91,6 @@ class SentenceSegmentation:
                     str.maketrans("", "", string.punctuation)
                 )
                 str_item_1 = "".join([".", str_item_1.lower()])
-                print(self.processedWordLists[-5:])
                 if str_item_1 not in self.tld_dict:
                     # if abbreviations
                     if ((splitItem[0].lower() not in self.abbreviations_dict) and (
