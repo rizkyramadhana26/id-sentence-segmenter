@@ -46,7 +46,7 @@ class SentenceSegmentation:
 
     def get_sentences(self, document=""):
         # remove \n\t
-        document = re.sub("\s+", " ", document.strip())
+        #document = re.sub("\s+", " ", document.strip())
 
         # replace quotes
         document = document.replace(QUOTE_TRANSLATION[0], '"')
