@@ -16,7 +16,7 @@ class StringUtils:
 
     def splitStringBySpaces(self, strings):
         self.wordlists = strings.strip().split()
-        return self.wordlists, [x.span() for x in re.finditer('[^\s]+', strings)]
+        return self.wordlists, [x.span() for x in re.finditer(r'[^\s]+', strings)]
 
 
 # test

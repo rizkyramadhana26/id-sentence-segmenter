@@ -78,7 +78,15 @@ class SentenceSegmentation:
         for x,(start,end) in zip(range(0, len(self.wordLists)),self.wordListsSpan):
             if "." in self.wordLists[x] and self.wordLists[x][-1] != ".":
                 splitItem = self.wordLists[x].split(".")
-                splitItemSpan = [(x.span()[0]+start,x.span()[1]+start) for x in re.finditer('[^.]+',self.wordLists[x])]
+                idx = [i+start for i,ltr in enumerate(self.wordLists[x]) if ltr=='.']
+                splitItemSpan = []
+                for i,id in enumerate(idx+[end]):
+                    if i==0:
+                        splitItemSpan.append((start,id))
+                    else:
+                        splitItemSpan.append((idx[i-1]+1,id))
+                # splitItemSpan = [(x.span()[0]+start,x.span()[1]+start) for x in re.finditer('[^.]+',self.wordLists[x])]
+                assert len(splitItem) ==len(splitItemSpan)
                 # merge
                 if len(splitItem) != 2:
                     endlist = splitItem[-1]
