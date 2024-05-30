@@ -2,7 +2,7 @@
 
 import sys
 from os import path
-
+import re
 
 class StringUtils:
     strings = ""
@@ -16,7 +16,7 @@ class StringUtils:
 
     def splitStringBySpaces(self, strings):
         self.wordlists = strings.strip().split()
-        return self.wordlists
+        return self.wordlists, [x.span() for x in re.finditer('[^\s]+', strings)]
 
 
 # test

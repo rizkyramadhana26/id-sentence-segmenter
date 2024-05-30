@@ -43,6 +43,7 @@ class SentenceSegmentation:
         self.sentenceLists = []
 
         self.stringUtils = StringUtils()
+        self.endOfSentences = []
 
     def get_sentences(self, document=""):
         # remove \n\t
@@ -55,11 +56,12 @@ class SentenceSegmentation:
 
         self.wordLists = []
         self.processedWordLists = []
+        self.processedWordListsSpan = []
         self.sentenceLists = []
 
-        self.wordLists = self.stringUtils.splitStringBySpaces(self.strings)
+        self.wordLists, self.wordListsSpan = self.stringUtils.splitStringBySpaces(self.strings)
         self.findEndOfSentence()
-        return self.sentenceLists
+        return self.sentenceLists, self.endOfSentences
 
     # def get_sentences(self):
     #     self.findEndOfSentence()
@@ -73,19 +75,18 @@ class SentenceSegmentation:
         lastWordIndex = 0
 
         lenWords = len(self.wordLists)
-
-        for x in range(0, len(self.wordLists)):
-            # print(self.wordLists[x])
+        for x,(start,end) in zip(range(0, len(self.wordLists)),self.wordListsSpan):
             if "." in self.wordLists[x] and self.wordLists[x][-1] != ".":
                 splitItem = self.wordLists[x].split(".")
-
+                splitItemSpan = [(x.span()[0]+start,x.span()[1]+start) for x in re.finditer('[^.]+',self.wordLists[x])]
                 # merge
                 if len(splitItem) != 2:
                     endlist = splitItem[-1]
                     startlist = ".".join(splitItem[:-1])
-
+                    endlistspan = splitItemSpan[-1]
+                    startlistspan = (splitItemSpan[0][0],splitItemSpan[-2][1])
                     splitItem = [startlist, endlist]
-
+                    splitItemSpan = [startlistspan,endlistspan]
                 # test tld
                 str_item_1 = splitItem[1].translate(
                     str.maketrans("", "", string.punctuation)
@@ -99,21 +100,25 @@ class SentenceSegmentation:
                         split_str = ["".join([splitItem[0], "."]), splitItem[1]]
                         self.processedWordLists.append(split_str[0].strip())
                         self.processedWordLists.append(split_str[1].strip())
+                        self.processedWordListsSpan.append((splitItemSpan[0][0],splitItemSpan[0][1]+1)) #tambah 1?
+                        self.processedWordListsSpan.append(splitItemSpan[1])
                     else: #bukan kalimat baru, termasuk numerik
                         split_str = "".join([splitItem[0], ".", splitItem[1]])
                         self.processedWordLists.append(split_str.strip())
+                        self.processedWordListsSpan.append((splitItemSpan[0][0], splitItemSpan[1][1]))
                 # in a tld domain
                 else:
                     split_str = "".join([splitItem[0], ".", splitItem[1]])
                     self.processedWordLists.append(split_str.strip())
-
+                    self.processedWordListsSpan.append((splitItemSpan[0][0], splitItemSpan[1][1]))
             else:
                 self.processedWordLists.append(self.wordLists[x].strip())
+                self.processedWordListsSpan.append((start,end))
 
         #         print(self.processedWordLists)
 
         lenWords = len(self.processedWordLists)
-        for i in range(0, lenWords):
+        for i,(start,end) in zip(range(0, lenWords), self.processedWordListsSpan):
             #             print(self.processedWordLists[i])
             # check first char of words, if first char is ('"') then find close quote, it might before ('.') char
             firstChar = self.processedWordLists[i][0]
@@ -147,6 +152,7 @@ class SentenceSegmentation:
                             self.processedWordLists[firstWordIndex:lastWordIndex]
                         )
                         self.sentenceLists.append(sentence)
+                        self.endOfSentences.append(self.processedWordListsSpan[lastWordIndex-1][1])
 
                         firstWordIndex = lastWordIndex
 
@@ -175,6 +181,7 @@ class SentenceSegmentation:
                         self.processedWordLists[firstWordIndex:lastWordIndex]
                     )
                     self.sentenceLists.append(sentence)
+                    self.endOfSentences.append(self.processedWordListsSpan[lastWordIndex-1][1])
                     break
 
                 else:
@@ -185,7 +192,7 @@ class SentenceSegmentation:
                             self.processedWordLists[firstWordIndex:lastWordIndex]
                         )
                         self.sentenceLists.append(sentence)
-
+                        self.endOfSentences.append(self.processedWordListsSpan[lastWordIndex-1][1])
                         firstWordIndex = lastWordIndex
 
                     else:
